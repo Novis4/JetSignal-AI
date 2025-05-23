@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mines WebApp</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background: radial-gradient(ellipse at 60% 40%, #242b35 40%, #181a22 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .container {
+            margin-top: 20px;
+            background: rgba(34,36,45,0.88);
+            border-radius: 42px;
+            box-shadow: 0 0 110px 32px #33ff8818, 0 4px 32px 0 #000a;
+            padding: 60px 38px 44px 38px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 74px);
+            gap: 21px;
+            justify-content: center;
+            margin: 0 auto 42px auto;
+            background: rgba(20,24,38,0.54);
+            border-radius: 22px;
+            box-shadow: 0 0 85px 16px #33ff8820, 0 0 50px 15px #11ff7735 inset;
+            padding: 32px 18px;
+            position: relative;
+        }
+        .cell {
+            width: 74px; height: 74px;
+            border-radius: 17px;
+            background: rgba(35,40,52,0.95);
+            box-shadow: 0 0 22px 2px #00f89e18, 0 2px 7px #0003 inset;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: opacity 0.33s, transform 0.33s;
+            z-index: 1;
+            overflow: visible;
+        }
+        .cell.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .cell.safe {
+            background: #242c2e;
+            box-shadow:
+                    0 0 38px 14px #2affddaa,
+                    0 0 22px 8px #20ffe790,
+                    0 0 0 0 #fff0;
+        }
+        .cell.safe::before {
+            content: '';
+            display: block;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #32fff9 0%, #32ffe900 70%);
+            position: absolute;
+            left: 50%; top: 50%; transform: translate(-50%,-50%);
+            z-index: 2;
+            filter: blur(0.5px);
+            box-shadow: 0 0 26px 6px #31ffe9cc;
+        }
+        .cell.empty {
+            background: rgba(35,38,48,0.72);
+        }
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 14px;
+            width: 100%;
+        }
+        .btn {
+            padding: 0 80px;
+            font-size: 24px;
+            height: 56px;
+            border-radius: 15px;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 16px #232c3855;
+            transition: background 0.17s, box-shadow 0.15s, transform 0.09s;
+        }
+        .btn-play {
+            background: linear-gradient(90deg,#00ceb8 0%, #009e86 100%);
+            color: #fff;
+            text-shadow: 0 2px 10px #016a7d6c;
+            box-shadow: 0 3px 24px #1fffa277, 0 1px 6px #00ffae29;
+        }
+        .btn-play:active {
+            background: linear-gradient(90deg,#009e86 0%, #00ceb8 100%);
+            transform: scale(0.98);
+        }
+        .btn-reset {
+            background: #24262c;
+            color: #fff;
+            box-shadow: 0 3px 18px #1118;
+        }
+        .btn-reset:active {
+            background: #17191c;
+            transform: scale(0.98);
+        }
+        @media (max-width: 700px) {
+            .container { padding: 14px 2px 14px 2px; margin-top: 8px;}
+            .board { grid-template-columns: repeat(5, 44px); gap: 9px; padding: 12px 2px;}
+            .cell, .cell.safe, .cell.empty { width:44px; height:44px; border-radius:8px;}
+            .btn { padding: 0 18px; font-size:15px; height:34px; border-radius:7px;}
+            .cell.safe::before { width: 24px; height: 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="board" id="board"></div>
+    <div class="button-row">
+        <button class="btn btn-play" onclick="playBoard()">PLAY</button>
+        <button class="btn btn-reset" onclick="resetBoard()">RESET</button>
+    </div>
+</div>
+<script>
+    const ROWS = 5;
+    const COLS = 5;
+
+    let cells = [];
+
+    function generateBoardArray() {
+        let safeRows = shuffle([0,1,2,3,4]);
+        let arr = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+        for (let col = 0; col < COLS; col++) {
+            arr[safeRows[col]][col] = 1;
+        }
+        return arr;
+    }
+
+    function animateBoard(boardArr) {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        cells = [];
+        for(let i=0; i<ROWS*COLS; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            board.appendChild(cell);
+            cells.push(cell);
+        }
+        boardArr.forEach((row, rowIdx) => {
+            row.forEach((value, colIdx) => {
+                setTimeout(() => {
+                    let cell = cells[rowIdx*COLS + colIdx];
+                    cell.classList.add('visible');
+                    if(value === 1) {
+                        cell.classList.add('safe');
+                    } else {
+                        cell.classList.add('empty');
+                    }
+                }, 68 * (rowIdx*COLS + colIdx));
+            });
+        });
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function playBoard() {
+        animateBoard(generateBoardArray());
+    }
+    function resetBoard() {
+        animateBoard(Array.from({length: ROWS}, () => Array(COLS).fill(0)));
+    }
+    resetBoard();
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aviator WebApp</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <style>
+        body {
+            background: #141a29;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
+        }
+        .container {
+            background: #1b2438;
+            border-radius: 32px;
+            box-shadow: 0 0 50px 12px #20cbff22;
+            padding: 40px 30px;
+            display: flex; flex-direction: column; align-items: center;
+            margin-top: 40px;
+        }
+        .coefficient {
+            font-size: 68px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            transition: color 0.2s;
+        }
+        .crash { color: #ff3e3e;}
+        .win { color: #38f03b;}
+        .button-row {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .btn {
+            font-size: 24px; font-weight: bold;
+            padding: 14px 48px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(90deg,#00ceb8 0%, #009e86 100%);
+            color: #fff; cursor: pointer;
+            box-shadow: 0 3px 18px #1fffa288, 0 1px 6px #00ffae29;
+            width: 100%;
+            max-width: 250px;
+            margin: 0;
+        }
+        .btn:active { transform: scale(0.97);}
+        .info {margin-top: 14px; font-size: 18px; color:#ffe67c;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="status" class="coefficient">1.00x</div>
+    <div class="button-row">
+        <button class="btn" id="btn" onclick="cashout()" disabled></button>
+        <button class="btn" id="startBtn" onclick="startGame()"></button>
+    </div>
+    <div id="result" class="info"></div>
+</div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const lang = params.get('lang') || 'ru';
+
+    const translations = {
+        ru: {
+            cash_out: 'Забрать',
+            start: 'Старт',
+            crash: '💥 Самолёт улетел на ',
+            cashout: '✅ Забрал на ',
+        },
+        en: {
+            cash_out: 'Cash Out',
+            start: 'Start',
+            crash: '💥 The plane flew away at ',
+            cashout: '✅ Cashed out at ',
+        }
+    };
+
+    const t = translations[lang] || translations['ru'];
+    document.getElementById('btn').innerText = t.cash_out;
+    document.getElementById('startBtn').innerText = t.start;
+
+    let coef = 1.00, timer = null, crashed = false, cashouted = false, crashAt = 0;
+    function startGame() {
+        document.getElementById('result').innerText = "";
+        document.getElementById('btn').disabled = false;
+        coef = 1.00; crashed = false; cashouted = false;
+        crashAt = (Math.random()*2 + Math.random()*2 + Math.random()*2 + 1.2).toFixed(2); // чуть чаще 2-3x
+        document.getElementById('status').innerText = coef.toFixed(2) + "x";
+        document.getElementById('status').className = "coefficient";
+        clearInterval(timer);
+        timer = setInterval(() => {
+            coef += 0.03 + coef * 0.035; // ускорение роста
+            document.getElementById('status').innerText = coef.toFixed(2) + "x";
+            if (coef >= crashAt && !cashouted) {
+                crash();
+            }
+        }, 70);
+    }
+    function crash() {
+        crashed = true;
+        clearInterval(timer);
+        document.getElementById('status').className = "coefficient crash";
+        document.getElementById('result').innerText = t.crash + coef.toFixed(2) + "x";
+        document.getElementById('btn').disabled = true;
+    }
+    function cashout() {
+        if (!crashed && !cashouted) {
+            cashouted = true;
+            clearInterval(timer);
+            document.getElementById('status').className = "coefficient win";
+            document.getElementById('result').innerText = t.cashout + coef.toFixed(2) + "x!";
+            document.getElementById('btn').disabled = true;
+        }
+    }
+</script>
+</body>
+</html>
