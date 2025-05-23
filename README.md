@@ -39,10 +39,10 @@
 ## Screenshots
 
 **Russian Main Menu:**  
-![Main menu RU](glavnoe_menu.png)
+![Main menu RU](data/glavnoe_menu.png)
 
 **English Main Menu:**  
-![Main menu EN](glavnoe_menu-en.png)
+![Main menu EN](data/glavnoe_menu-en.png)
 
 ## License
 
