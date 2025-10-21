@@ -81,7 +81,7 @@ function getMainMenu(ctx) {
         buttons.push([Markup.button.callback(t.instruction, 'INSTRUCTION')]);
         buttons.push([Markup.button.callback(t.choose_language, 'LANG')]);
     } else if (status === "wait_confirm") {
-        buttons.push([Markup.button.url(t.register, 'https://1wmndv.life/v3/2158/1win-mines?p=0ujs')]);
+        buttons.push([Markup.button.url(t.register, 'https://1wilib.life/?open=register&p=dpcl')]);
         buttons.push([Markup.button.callback(t.i_registered, 'I_REGISTERED')]);
         buttons.push([Markup.button.callback(t.instruction, 'INSTRUCTION')]);
         buttons.push([Markup.button.callback(t.choose_language, 'LANG')]);
@@ -132,12 +132,12 @@ bot.action('REGISTER', advancedThrottleMiddleware, (ctx) => {
         t['instruction_text_register'] || (
             '🔥 Чтобы получить максимум от использования этого бота, необходимо следовать этим шагам:\n\n' +
             '1. Зарегистрируйте новый аккаунт на сайте 1WIN\n' +
-            '2. Введите промокод: PENK1WIN\n' +
+            '2. Введите промокод: JETSPI\n' +
             '3. Пополните баланс от 500₽\n\n' +
             'После этого нажмите кнопку ниже 👇'
         ),
         Markup.inlineKeyboard([
-            [Markup.button.url(t.register, 'https://1wmndv.life/v3/2158/1win-mines?p=0ujs')]
+            [Markup.button.url(t.register, 'https://1wilib.life/?open=register&p=dpcl')]
         ])
     );
     setTimeout(() => {
@@ -305,3 +305,4 @@ bot.command('aviator', advancedThrottleMiddleware, checkAccess, (ctx) => {
 
 bot.launch();
 console.log('Бот запущен!');
+
